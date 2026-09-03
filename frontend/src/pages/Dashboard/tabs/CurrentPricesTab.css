@@ -1,0 +1,315 @@
+.current-prices-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.prices-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.prices-header h2 {
+  font-size: 24px;
+  margin: 0;
+  color: #e2e8f0;
+}
+
+.refresh-btn {
+  padding: 8px 16px;
+  background: rgba(0, 217, 255, 0.1);
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  border-radius: 6px;
+  color: #00d9ff;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+  background: rgba(0, 217, 255, 0.2);
+  border-color: #00d9ff;
+}
+
+.cryptos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.crypto-card {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(0, 217, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.crypto-card:hover {
+  border-color: rgba(0, 217, 255, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 217, 255, 0.1);
+}
+
+.crypto-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.crypto-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.crypto-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.crypto-name h3 {
+  font-size: 18px;
+  margin: 0 0 5px 0;
+  color: #e2e8f0;
+}
+
+.crypto-name .symbol {
+  font-size: 12px;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.crypto-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.crypto-price .price {
+  font-size: 24px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.crypto-price .change {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+
+.crypto-price .change.positive {
+  color: #00ff00;
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.crypto-price .change.negative {
+  color: #ff0000;
+  background: rgba(255, 0, 0, 0.1);
+}
+
+/* Chart Section - FIXED - Removed extra gap */
+.crypto-chart-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.chart-label {
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  padding: 0;
+}
+
+/* Chart Container - Tight spacing */
+.crypto-chart {
+  width: 100%;
+  height: 300px;
+  margin: 0;
+  padding: 0;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(0, 217, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Override Recharts default styling */
+.crypto-chart .recharts-wrapper {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.crypto-chart .recharts-surface {
+  overflow: visible !important;
+}
+
+/* Custom Tooltip */
+.chart-tooltip {
+  background: rgba(15, 23, 42, 0.95);
+  border: 2px solid rgba(0, 217, 255, 0.4);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.chart-tooltip p {
+  margin: 4px 0;
+  color: #e2e8f0;
+  font-size: 12px;
+}
+
+.tooltip-date {
+  color: #00d9ff;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+}
+
+.tooltip-price {
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+}
+
+/* Footer - with proper top padding only */
+.crypto-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 15px;
+  margin-top: 0;
+  border-top: 1px solid rgba(0, 217, 255, 0.1);
+}
+
+.holdings {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.holdings .label {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.holdings .amount {
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.holdings .amount .value {
+  color: #00d9ff;
+  font-size: 12px;
+  margin-left: 5px;
+}
+
+.holdings .amount .no-holding {
+  color: #64748b;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-buy,
+.btn-sell {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-buy {
+  background: linear-gradient(135deg, #00ff00, #00cc00);
+  color: #0f172a;
+}
+
+.btn-buy:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 255, 0, 0.3);
+}
+
+.btn-sell {
+  background: linear-gradient(135deg, #ff6b6b, #ff0000);
+  color: #fff;
+}
+
+.btn-sell:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(255, 0, 0, 0.3);
+}
+
+.btn-sell:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #94a3b8;
+}
+
+@media (max-width: 768px) {
+  .crypto-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .crypto-price {
+    align-items: flex-start;
+  }
+
+  .crypto-footer {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .actions button {
+    flex: 1;
+  }
+
+  .crypto-chart {
+    height: 200px;
+  }
+
+  .prices-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .refresh-btn {
+    width: 100%;
+  }
+
+  .crypto-chart-section {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
