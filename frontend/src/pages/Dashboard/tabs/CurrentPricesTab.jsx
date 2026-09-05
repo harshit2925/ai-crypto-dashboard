@@ -1,22 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import BuySellModal from '../components/BuySellModal';
+import * as portfolioService from '../../../services/portfolioService';
 import './CurrentPricesTab.css';
 
 export default function CurrentPricesTab() {
   const [cryptos, setCryptos] = useState([]);
+  const [holdings, setHoldings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('buy');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchCryptoData();
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      await fetchCryptoData();
+      await fetchHoldings();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchCryptoData = async () => {
     try {
-      setLoading(true);
       const response = await fetch(
         'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&sparkline=true&price_change_percentage=24h'
       );
@@ -34,10 +46,22 @@ export default function CurrentPricesTab() {
       }));
 
       setCryptos(formattedData);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching crypto data:', error);
-      setLoading(false);
+    }
+  };
+
+  const fetchHoldings = async () => {
+    try {
+      const response = await portfolioService.getHoldings();
+      if (response.success && response.data) {
+        setHoldings(response.data);
+        console.log('✅ Holdings fetched from MongoDB:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching holdings from MongoDB:', error);
+      // Fallback to empty holdings if error
+      setHoldings([]);
     }
   };
 
@@ -53,9 +77,53 @@ export default function CurrentPricesTab() {
     setModalOpen(true);
   };
 
+  const handleSaveTransaction = async (updatedCrypto) => {
+    try {
+      setError(null);
+      console.log(`🔄 Saving ${modalMode} transaction:`, updatedCrypto);
+
+      if (modalMode === 'buy') {
+        console.log('📤 Calling portfolioService.buyCrypto()...');
+        const response = await portfolioService.buyCrypto(
+          updatedCrypto.symbol,
+          updatedCrypto.name,
+          updatedCrypto.quantity,
+          updatedCrypto.price
+        );
+
+        if (response.success) {
+          console.log('✅ Buy successful:', response.message);
+          setModalOpen(false);
+          // Refresh holdings from MongoDB
+          await fetchHoldings();
+        } else {
+          throw new Error(response.message || 'Buy failed');
+        }
+      } else if (modalMode === 'sell') {
+        console.log('📤 Calling portfolioService.sellCrypto()...');
+        const response = await portfolioService.sellCrypto(
+          updatedCrypto.symbol,
+          updatedCrypto.quantity,
+          updatedCrypto.price
+        );
+
+        if (response.success) {
+          console.log('✅ Sell successful:', response.message);
+          setModalOpen(false);
+          // Refresh holdings from MongoDB
+          await fetchHoldings();
+        } else {
+          throw new Error(response.message || 'Sell failed');
+        }
+      }
+    } catch (err) {
+      console.error('❌ Error saving transaction:', err);
+      setError(err.message || 'Error saving transaction');
+    }
+  };
+
   const getHoldingAmount = (symbol) => {
-    const holdings = JSON.parse(localStorage.getItem('holdings') || '[]');
-    const holding = holdings.find(h => h.symbol.toUpperCase() === symbol);
+    const holding = holdings.find(h => h.symbol === symbol);
     return holding ? holding.quantity : 0;
   };
 
@@ -144,8 +212,22 @@ export default function CurrentPricesTab() {
     <div className="current-prices-container">
       <div className="prices-header">
         <h2>💹 Live Crypto Prices</h2>
-        <button className="refresh-btn" onClick={fetchCryptoData}>🔄 Refresh</button>
+        <button className="refresh-btn" onClick={loadData}>🔄 Refresh</button>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div style={{
+          background: 'rgba(255, 107, 107, 0.2)',
+          border: '1px solid #ff6b6b',
+          color: '#ff6b6b',
+          padding: '12px 16px',
+          borderRadius: '8px',
+          marginBottom: '20px',
+        }}>
+          ⚠️ {error}
+        </div>
+      )}
 
       <div className="cryptos-list">
         {cryptos.map(crypto => {
@@ -312,9 +394,8 @@ export default function CurrentPricesTab() {
           crypto={selectedCrypto}
           mode={modalMode}
           onClose={() => setModalOpen(false)}
-          onSuccess={() => {
-            setModalOpen(false);
-          }}
+          onSave={handleSaveTransaction}
+          onSuccess={() => setModalOpen(false)}
         />
       )}
     </div>

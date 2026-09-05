@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './BuySellModal.css';
 
 
-export default function BuySellModal({ crypto, mode, onClose, onSuccess }) {
+export default function BuySellModal({ crypto, mode, onClose, onSuccess, onSave }) {
   const [quantity, setQuantity] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -24,58 +24,60 @@ export default function BuySellModal({ crypto, mode, onClose, onSuccess }) {
     setLoading(true);
 
     try {
-      // Get existing holdings
-      const holdings = JSON.parse(localStorage.getItem('holdings') || '[]');
-      
-      // Find if user already holds this crypto
-      const existingIndex = holdings.findIndex(h => h.symbol.toUpperCase() === crypto.symbol);
+      // Call onSave to send to backend API (MongoDB)
+      if (onSave) {
+        console.log(`Calling onSave for ${mode}:`, { symbol: crypto.symbol, quantity, price: crypto.price });
+        await onSave({
+          symbol: crypto.symbol,
+          name: crypto.name,
+          quantity: parseFloat(quantity),
+          price: crypto.price,
+        });
+        console.log('✅ Transaction saved to backend!');
+      } else {
+        // Fallback: Save to localStorage if onSave not provided
+        console.log('⚠️ No onSave provided, falling back to localStorage');
+        const holdings = JSON.parse(localStorage.getItem('holdings') || '[]');
+        const existingIndex = holdings.findIndex(h => h.symbol.toUpperCase() === crypto.symbol);
 
-      if (mode === 'buy') {
-        if (existingIndex >= 0) {
-          // Update existing holding
-          holdings[existingIndex].quantity += parseFloat(quantity);
-          holdings[existingIndex].totalCost += parseFloat(totalCost);
-        } else {
-          // Add new holding
-          holdings.push({
-            symbol: crypto.symbol,
-            name: crypto.name,
-            quantity: parseFloat(quantity),
-            price: crypto.price,
-            totalCost: parseFloat(totalCost),
-            boughtAt: new Date().toISOString(),
-            image: crypto.image,
-          });
-        }
-        setSuccess(`✅ Successfully bought ${quantity} ${crypto.symbol}!`);
-      } else if (mode === 'sell') {
-        if (existingIndex >= 0) {
-          const quantityToSell = parseFloat(quantity);
-          if (holdings[existingIndex].quantity < quantityToSell) {
-            setError('You don\'t have enough holdings to sell');
+        if (mode === 'buy') {
+          if (existingIndex >= 0) {
+            holdings[existingIndex].quantity += parseFloat(quantity);
+            holdings[existingIndex].totalCost += parseFloat(totalCost);
+          } else {
+            holdings.push({
+              symbol: crypto.symbol,
+              name: crypto.name,
+              quantity: parseFloat(quantity),
+              price: crypto.price,
+              totalCost: parseFloat(totalCost),
+              boughtAt: new Date().toISOString(),
+              image: crypto.image,
+            });
+          }
+        } else if (mode === 'sell') {
+          if (existingIndex >= 0) {
+            const quantityToSell = parseFloat(quantity);
+            if (holdings[existingIndex].quantity < quantityToSell) {
+              setError('You don\'t have enough holdings to sell');
+              setLoading(false);
+              return;
+            }
+            holdings[existingIndex].quantity -= quantityToSell;
+            holdings[existingIndex].totalCost -= parseFloat(totalCost);
+            if (holdings[existingIndex].quantity <= 0) {
+              holdings.splice(existingIndex, 1);
+            }
+          } else {
+            setError('You don\'t own this cryptocurrency');
             setLoading(false);
             return;
           }
-
-          holdings[existingIndex].quantity -= quantityToSell;
-          holdings[existingIndex].totalCost -= parseFloat(totalCost);
-
-          // Remove if quantity becomes 0
-          if (holdings[existingIndex].quantity <= 0) {
-            holdings.splice(existingIndex, 1);
-          }
-          setSuccess(`✅ Successfully sold ${quantity} ${crypto.symbol}!`);
-        } else {
-          setError('You don\'t own this cryptocurrency');
-          setLoading(false);
-          return;
         }
+        localStorage.setItem('holdings', JSON.stringify(holdings));
       }
 
-      // Save to localStorage
-      localStorage.setItem('holdings', JSON.stringify(holdings));
-      
-      // Clear form
+      setSuccess(`✅ Successfully ${mode === 'buy' ? 'bought' : 'sold'} ${quantity} ${crypto.symbol}!`);
       setQuantity('');
       
       // Call success callback
@@ -84,7 +86,8 @@ export default function BuySellModal({ crypto, mode, onClose, onSuccess }) {
         onClose();
       }, 1500);
     } catch (err) {
-      setError('Error processing transaction: ' + err.message);
+      console.error('Transaction error:', err);
+      setError('Error processing transaction: ' + (err.message || JSON.stringify(err)));
       setLoading(false);
     }
   };
@@ -185,7 +188,7 @@ export default function BuySellModal({ crypto, mode, onClose, onSuccess }) {
 
           {/* Warning */}
           <p className="modal-warning">
-            ⚠️ This is a demo. Transactions are stored locally and not real.
+            ⚠️ This is a demo. Transactions are stored in MongoDB.
           </p>
         </form>
       </div>

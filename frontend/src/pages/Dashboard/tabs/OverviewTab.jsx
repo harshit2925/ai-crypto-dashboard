@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
+import * as portfolioService from '../../../services/portfolioService';
 import './OverviewTab.css';
 
 export default function OverviewTab({ onNavigate }) {
   const [portfolioData, setPortfolioData] = useState({
     totalValue: 0,
-    change24h: 0,
-    changePercent: 0,
     totalInvested: 0,
     gainLoss: 0,
     gainLossPercent: 0,
@@ -16,103 +15,62 @@ export default function OverviewTab({ onNavigate }) {
   });
   const [loading, setLoading] = useState(true);
 
+  // Load data from MongoDB
+  const loadPortfolioData = async () => {
+    try {
+      const summaryResponse = await portfolioService.getPortfolioSummary();
+      
+      if (summaryResponse.success) {
+        const summary = summaryResponse.data;
+        
+        // Transform data for display
+        const holdingsData = summary.cryptos.map(h => ({
+          name: h.symbol.toUpperCase(),
+          value: parseFloat((h.quantity * h.price).toFixed(2)),
+          quantity: h.quantity,
+        }));
+
+        setPortfolioData({
+          totalValue: summary.totalValue || 0,
+          totalInvested: summary.totalInvested || 0,
+          gainLoss: summary.totalGainLoss || 0,
+          gainLossPercent: summary.totalGainLossPercent || 0,
+          holdings: holdingsData,
+          topHolding: holdingsData.length > 0 ? holdingsData[0].name : null,
+          performanceData: generatePerformanceData(summary.totalInvested, summary.totalValue),
+        });
+      }
+    } catch (err) {
+      console.error('Error loading portfolio:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load on mount
   useEffect(() => {
     loadPortfolioData();
   }, []);
 
-  const loadPortfolioData = () => {
-    let holdings = JSON.parse(localStorage.getItem('holdings') || '[]');
+  // Auto-refresh every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadPortfolioData();
+    }, 5000);
 
-    // Add demo holdings if empty
-    if (holdings.length === 0) {
-      const demoHoldings = [
-        {
-          symbol: 'BTC',
-          name: 'Bitcoin',
-          quantity: 0.5,
-          price: 42500,
-          totalCost: 21250,
-          boughtAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-          image: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png',
-        },
-        {
-          symbol: 'ETH',
-          name: 'Ethereum',
-          quantity: 3,
-          price: 2250,
-          totalCost: 6750,
-          boughtAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-          image: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png',
-        },
-        {
-          symbol: 'SOL',
-          name: 'Solana',
-          quantity: 15,
-          price: 98,
-          totalCost: 1470,
-          boughtAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-          image: 'https://assets.coingecko.com/coins/images/4128/large/solana.png',
-        },
-      ];
-      localStorage.setItem('holdings', JSON.stringify(demoHoldings));
-      holdings = demoHoldings;
-    }
+    return () => clearInterval(interval);
+  }, []);
 
-    if (holdings.length > 0) {
-      const totalValue = holdings.reduce((sum, h) => sum + (h.quantity * h.price), 0);
-      const totalInvested = holdings.reduce((sum, h) => sum + h.totalCost, 0);
-      const gainLoss = totalValue - totalInvested;
-      const gainLossPercent = totalInvested > 0 ? ((gainLoss / totalInvested) * 100).toFixed(2) : 0;
-
-      const chartData = holdings.map(h => ({
-        name: h.symbol.toUpperCase(),
-        value: parseFloat((h.quantity * h.price).toFixed(2)),
-        quantity: h.quantity,
-      }));
-
-      const topHolding = chartData.reduce((max, h) => h.value > max.value ? h : max, chartData[0]);
-
-      // Create detailed 4-week performance data (daily data points)
-      const performanceData = generateDetailedPerformanceData(totalInvested, totalValue);
-
-      setPortfolioData({
-        totalValue,
-        change24h: totalValue * 0.025, // 2.5% of total (realistic 24h change)
-        changePercent: 2.5,
-        totalInvested,
-        gainLoss,
-        gainLossPercent,
-        holdings: chartData,
-        topHolding,
-        performanceData,
-      });
-    } else {
-      setPortfolioData({
-        totalValue: 0,
-        change24h: 0,
-        changePercent: 0,
-        totalInvested: 0,
-        gainLoss: 0,
-        gainLossPercent: 0,
-        holdings: [],
-        topHolding: null,
-        performanceData: [],
-      });
-    }
-    setLoading(false);
-  };
-
-  // Generate detailed 4-week performance data (daily points)
-  const generateDetailedPerformanceData = (invested, current) => {
-    const daysCount = 28; // 4 weeks
+  // Generate performance data
+  const generatePerformanceData = (invested, current) => {
+    if (!invested || !current) return [];
+    
+    const daysCount = 28;
     const data = [];
     
     for (let i = 0; i < daysCount; i++) {
-      // Calculate value for each day (simulate growth from invested to current)
       const progress = i / (daysCount - 1);
       const dayValue = invested + ((current - invested) * progress);
-      
-      // Add realistic volatility (crypto-like movements)
       const volatility = dayValue * (0.03 * Math.sin(i * 0.3) + 0.02 * Math.cos(i * 0.5));
       const randomVolatility = dayValue * 0.01 * (Math.random() - 0.5);
       
@@ -121,7 +79,6 @@ export default function OverviewTab({ onNavigate }) {
       
       data.push({
         time: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        displayDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }),
         value: Math.round(dayValue + volatility + randomVolatility),
       });
     }
@@ -137,7 +94,7 @@ export default function OverviewTab({ onNavigate }) {
 
   return (
     <div className="overview-container">
-      {/* Top Summary Cards */}
+      {/* Summary Cards */}
       <div className="summary-grid">
         <div className="summary-card portfolio-value">
           <div className="card-header">
@@ -146,9 +103,7 @@ export default function OverviewTab({ onNavigate }) {
           </div>
           <div className="card-content">
             <div className="amount">${portfolioData.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-            <div className={`change ${portfolioData.changePercent >= 0 ? 'positive' : 'negative'}`}>
-              {portfolioData.changePercent >= 0 ? '📈' : '📉'} {portfolioData.changePercent}% (24h)
-            </div>
+            <div className="change positive">📈 2.5% (24h)</div>
           </div>
         </div>
 
@@ -190,7 +145,7 @@ export default function OverviewTab({ onNavigate }) {
             </div>
             <div className="stat-item">
               <span className="stat-label">Top Holding</span>
-              <span className="stat-value">{portfolioData.topHolding ? portfolioData.topHolding.name : 'N/A'}</span>
+              <span className="stat-value">{portfolioData.topHolding || 'N/A'}</span>
             </div>
           </div>
         </div>
@@ -200,12 +155,12 @@ export default function OverviewTab({ onNavigate }) {
       <div className="performance-section">
         <div className="section-header">
           <h2>📈 Performance Trend</h2>
-          <span className="timeframe">Last 4 Weeks (28 Days)</span>
+          <span className="timeframe">Last 4 Weeks</span>
         </div>
         <div className="performance-chart">
-          {portfolioData.performanceData && portfolioData.performanceData.length > 0 ? (
+          {portfolioData.performanceData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={portfolioData.performanceData} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
+              <AreaChart data={portfolioData.performanceData}>
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#00d9ff" stopOpacity={0.8} />
@@ -213,60 +168,31 @@ export default function OverviewTab({ onNavigate }) {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 217, 255, 0.1)" />
-                <XAxis 
-                  dataKey="time" 
-                  stroke="#94a3b8" 
-                  style={{ fontSize: '12px' }}
-                  interval={Math.floor(portfolioData.performanceData.length / 5)}
-                />
-                <YAxis 
-                  stroke="#94a3b8" 
-                  style={{ fontSize: '12px' }}
-                  label={{ value: 'Portfolio Value ($)', angle: -90, position: 'insideLeft', offset: 10 }}
-                />
-                <Tooltip 
-                  contentStyle={{ background: '#1e293b', border: '1px solid #00d9ff', borderRadius: '8px' }}
-                  formatter={(value) => `$${value.toLocaleString()}`}
-                  labelFormatter={(label) => `Date: ${label}`}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="value" 
-                  stroke="#00d9ff" 
-                  fill="url(#colorValue)" 
-                  strokeWidth={3}
-                />
+                <XAxis dataKey="time" stroke="#94a3b8" style={{ fontSize: '12px' }} />
+                <YAxis stroke="#94a3b8" style={{ fontSize: '12px' }} />
+                <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #00d9ff', borderRadius: '8px' }} formatter={(value) => `$${value.toLocaleString()}`} />
+                <Area type="monotone" dataKey="value" stroke="#00d9ff" fill="url(#colorValue)" strokeWidth={3} />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
             <div style={{ textAlign: 'center', color: '#94a3b8', padding: '40px' }}>
-              No data available
+              No performance data
             </div>
           )}
         </div>
       </div>
 
-      {/* Holdings Breakdown */}
+      {/* Holdings */}
       {portfolioData.holdings.length > 0 ? (
         <div className="holdings-section">
           <div className="holdings-grid">
-            {/* Pie Chart */}
             <div className="pie-chart-container">
               <div className="section-header">
                 <h2>💎 Portfolio Allocation</h2>
               </div>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
-                  <Pie
-                    data={portfolioData.holdings}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, value }) => `${name}: $${value}`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
+                  <Pie data={portfolioData.holdings} cx="50%" cy="50%" labelLine={false} label={({ name, value }) => `${name}: $${value}`} outerRadius={80} dataKey="value">
                     {portfolioData.holdings.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
@@ -277,7 +203,6 @@ export default function OverviewTab({ onNavigate }) {
               </ResponsiveContainer>
             </div>
 
-            {/* Holdings List */}
             <div className="holdings-list-container">
               <div className="section-header">
                 <h2>🏆 Your Holdings</h2>
@@ -306,21 +231,7 @@ export default function OverviewTab({ onNavigate }) {
         <div className="empty-state">
           <div className="empty-icon">🚀</div>
           <h2>No Holdings Yet</h2>
-          <p>Start building your crypto portfolio by going to the "Current Prices" tab to buy your first cryptocurrency!</p>
-          <div className="empty-tips">
-            <div className="tip">
-              <span className="tip-icon">💡</span>
-              <p>Diversify your portfolio across multiple assets</p>
-            </div>
-            <div className="tip">
-              <span className="tip-icon">📊</span>
-              <p>Monitor market trends and price changes</p>
-            </div>
-            <div className="tip">
-              <span className="tip-icon">🎯</span>
-              <p>Set investment goals and track progress</p>
-            </div>
-          </div>
+          <p>Go to Current Prices tab to buy your first cryptocurrency!</p>
         </div>
       )}
 
@@ -328,26 +239,17 @@ export default function OverviewTab({ onNavigate }) {
       <div className="quick-actions">
         <h2>Quick Actions</h2>
         <div className="actions-grid">
-          <div 
-            className="action-card"
-            onClick={() => onNavigate && onNavigate('prices')}
-          >
+          <div className="action-card" onClick={() => onNavigate && onNavigate('prices')}>
             <span className="action-icon">💹</span>
             <h3>View Prices</h3>
             <p>Check live crypto prices</p>
           </div>
-          <div 
-            className="action-card"
-            onClick={() => onNavigate && onNavigate('movers')}
-          >
+          <div className="action-card" onClick={() => onNavigate && onNavigate('movers')}>
             <span className="action-icon">🏆</span>
             <h3>Top Movers</h3>
             <p>See best & worst performers</p>
           </div>
-          <div 
-            className="action-card"
-            onClick={() => onNavigate && onNavigate('portfolio')}
-          >
+          <div className="action-card" onClick={() => onNavigate && onNavigate('portfolio')}>
             <span className="action-icon">💰</span>
             <h3>Manage Holdings</h3>
             <p>Edit your portfolio</p>

@@ -1,19 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import BuySellModal from '../components/BuySellModal';
+import * as portfolioService from '../../../services/portfolioService';
 import './PortfolioTab.css';
 
 export default function PortfolioTab() {
   const [holdings, setHoldings] = useState([]);
+  const [summary, setSummary] = useState(null);
   const [selectedCrypto, setSelectedCrypto] = useState(null);
   const [action, setAction] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadHoldings();
+    loadPortfolioData();
   }, []);
 
-  const loadHoldings = () => {
-    const data = JSON.parse(localStorage.getItem('holdings') || '[]');
-    setHoldings(data);
+  const loadPortfolioData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Try to load from backend first
+      try {
+        const holdingsResponse = await portfolioService.getHoldings();
+        if (holdingsResponse.success) {
+          setHoldings(holdingsResponse.data);
+        }
+
+        const summaryResponse = await portfolioService.getPortfolioSummary();
+        if (summaryResponse.success) {
+          setSummary(summaryResponse.data);
+        }
+      } catch (apiError) {
+        console.warn('Backend not available, falling back to localStorage');
+        // Fallback to localStorage if backend is down
+        const data = JSON.parse(localStorage.getItem('holdings') || '[]');
+        setHoldings(data);
+      }
+    } catch (err) {
+      console.error('Error loading portfolio:', err);
+      setError('Error loading portfolio data');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleBuy = (crypto) => {
@@ -26,43 +55,83 @@ export default function PortfolioTab() {
     setAction('sell');
   };
 
-  const handleSaveTransaction = (updatedCrypto) => {
-    if (updatedCrypto.quantity === 0) {
-      // Remove if quantity is 0
-      const updated = holdings.filter(h => h.symbol !== updatedCrypto.symbol);
-      setHoldings(updated);
-      localStorage.setItem('holdings', JSON.stringify(updated));
-    } else {
-      // Update existing or add new
-      const existingIndex = holdings.findIndex(h => h.symbol === updatedCrypto.symbol);
-      let updated;
-      if (existingIndex >= 0) {
-        updated = [...holdings];
-        updated[existingIndex] = updatedCrypto;
-      } else {
-        updated = [...holdings, updatedCrypto];
+  const handleSaveTransaction = async (updatedCrypto) => {
+    try {
+      setError(null);
+
+      if (action === 'buy') {
+        const response = await portfolioService.buyCrypto(
+          updatedCrypto.symbol,
+          updatedCrypto.name,
+          updatedCrypto.quantity,
+          updatedCrypto.price
+        );
+
+        if (response.success) {
+          console.log('✅ Buy successful:', response.message);
+          // Reload data from backend
+          await loadPortfolioData();
+        }
+      } else if (action === 'sell') {
+        const response = await portfolioService.sellCrypto(
+          updatedCrypto.symbol,
+          updatedCrypto.quantity,
+          updatedCrypto.price
+        );
+
+        if (response.success) {
+          console.log('✅ Sell successful:', response.message);
+          // Reload data from backend
+          await loadPortfolioData();
+        }
       }
-      setHoldings(updated);
-      localStorage.setItem('holdings', JSON.stringify(updated));
+
+      setSelectedCrypto(null);
+      setAction(null);
+    } catch (err) {
+      console.error('Error saving transaction:', err);
+      setError(err.message || 'Error saving transaction');
     }
-    setSelectedCrypto(null);
-    setAction(null);
   };
 
   const getTotalValue = () => {
-    return holdings.reduce((sum, h) => sum + (h.quantity * h.price), 0);
+    return summary?.totalValue || 0;
   };
 
   const getTotalInvested = () => {
-    return holdings.reduce((sum, h) => sum + h.totalCost, 0);
+    return summary?.totalInvested || 0;
   };
 
   const getTotalGainLoss = () => {
-    return getTotalValue() - getTotalInvested();
+    return summary?.totalGainLoss || 0;
   };
+
+  if (loading) {
+    return (
+      <div className="portfolio-container">
+        <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
+          Loading portfolio data...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="portfolio-container">
+      {/* Error Message */}
+      {error && (
+        <div style={{
+          background: 'rgba(255, 107, 107, 0.2)',
+          border: '1px solid #ff6b6b',
+          color: '#ff6b6b',
+          padding: '12px 16px',
+          borderRadius: '8px',
+          marginBottom: '20px',
+        }}>
+          ⚠️ {error}
+        </div>
+      )}
+
       {/* Portfolio Summary */}
       <div className="portfolio-summary">
         <div className="summary-item">
