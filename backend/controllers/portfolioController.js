@@ -5,7 +5,8 @@ exports.getHoldings = async (req, res) => {
   try {
     const userId = req.user.id; // From auth middleware
 
-    const holdings = await Holding.find({ userId })
+    // Get holdings with quantity > 0 (active holdings)
+    const holdings = await Holding.find({ userId, quantity: { $gt: 0 } })
       .sort({ lastUpdated: -1 });
 
     res.json({
@@ -144,7 +145,7 @@ exports.sellCrypto = async (req, res) => {
     holding.price = price; // Update to latest price
     holding.lastUpdated = new Date();
 
-    // Add transaction record
+    // Add transaction record (SELL transaction)
     holding.transactions.push({
       type: 'sell',
       quantity,
@@ -153,24 +154,23 @@ exports.sellCrypto = async (req, res) => {
       date: new Date(),
     });
 
-    // If quantity is 0, delete the holding
-    if (holding.quantity === 0) {
-      await Holding.deleteOne({ userId, symbol });
+    console.log(`📤 Sell Transaction Added:`, {
+      symbol,
+      type: 'sell',
+      quantity,
+      price,
+      total,
+      date: new Date(),
+    });
 
-      res.json({
-        success: true,
-        message: `Sold all ${symbol}. Holding removed.`,
-        data: null,
-      });
-    } else {
-      await holding.save();
+    // IMPORTANT: DO NOT DELETE - Keep holding with 0 quantity to preserve transaction history
+    await holding.save();
 
-      res.json({
-        success: true,
-        message: `Sold ${quantity} ${symbol}`,
-        data: holding,
-      });
-    }
+    res.json({
+      success: true,
+      message: `Sold ${quantity} ${symbol}`,
+      data: holding,
+    });
   } catch (error) {
     console.error('Error selling crypto:', error);
     res.status(500).json({
@@ -244,7 +244,8 @@ exports.getPortfolioSummary = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const holdings = await Holding.find({ userId });
+    // Only get holdings with quantity > 0 (active positions)
+    const holdings = await Holding.find({ userId, quantity: { $gt: 0 } });
 
     const summary = {
       totalValue: 0,

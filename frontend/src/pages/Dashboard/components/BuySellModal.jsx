@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './BuySellModal.css';
 
 
-export default function BuySellModal({ crypto, mode, onClose, onSuccess, onSave }) {
+export default function BuySellModal({ crypto, mode, onClose, onSuccess, onSave, currentHolding = 0 }) {
   const [quantity, setQuantity] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -18,6 +18,12 @@ export default function BuySellModal({ crypto, mode, onClose, onSuccess, onSave 
     // Validation
     if (!quantity || quantity <= 0) {
       setError('Please enter a valid quantity');
+      return;
+    }
+
+    // Check if selling more than holding
+    if (mode === 'sell' && parseFloat(quantity) > currentHolding) {
+      setError(`You only hold ${currentHolding} ${crypto.symbol}. Cannot sell more than you own.`);
       return;
     }
 
@@ -91,12 +97,6 @@ export default function BuySellModal({ crypto, mode, onClose, onSuccess, onSave 
       setLoading(false);
     }
   };
-
-  const currentHolding = (() => {
-    const holdings = JSON.parse(localStorage.getItem('holdings') || '[]');
-    const holding = holdings.find(h => h.symbol.toUpperCase() === crypto.symbol);
-    return holding ? holding.quantity : 0;
-  })();
 
   return (
     <div className="modal-overlay" onClick={onClose}>

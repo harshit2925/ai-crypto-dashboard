@@ -60,7 +60,6 @@ export default function CurrentPricesTab() {
       }
     } catch (error) {
       console.error('Error fetching holdings from MongoDB:', error);
-      // Fallback to empty holdings if error
       setHoldings([]);
     }
   };
@@ -94,7 +93,6 @@ export default function CurrentPricesTab() {
         if (response.success) {
           console.log('✅ Buy successful:', response.message);
           setModalOpen(false);
-          // Refresh holdings from MongoDB
           await fetchHoldings();
         } else {
           throw new Error(response.message || 'Buy failed');
@@ -110,7 +108,6 @@ export default function CurrentPricesTab() {
         if (response.success) {
           console.log('✅ Sell successful:', response.message);
           setModalOpen(false);
-          // Refresh holdings from MongoDB
           await fetchHoldings();
         } else {
           throw new Error(response.message || 'Sell failed');
@@ -127,14 +124,12 @@ export default function CurrentPricesTab() {
     return holding ? holding.quantity : 0;
   };
 
-  // Format sparkline data - use all 7 days of hourly data
+  // Format sparkline data
   const formatChartData = (sparkline) => {
     if (!sparkline || sparkline.length === 0) return [];
     
-    // Use all sparkline data (7 days of hourly data)
     const now = new Date();
     const dataPoints = sparkline.map((price, index) => {
-      // Calculate hours back from now
       const hoursBack = sparkline.length - index - 1;
       const date = new Date(now);
       date.setHours(date.getHours() - hoursBack);
@@ -157,7 +152,7 @@ export default function CurrentPricesTab() {
     return dataPoints;
   };
 
-  // Calculate nice Y-axis ticks based on price range
+  // Calculate nice Y-axis ticks
   const generateNiceTicks = (data) => {
     if (!data || data.length === 0) return [0, 100, 200];
 
@@ -215,7 +210,6 @@ export default function CurrentPricesTab() {
         <button className="refresh-btn" onClick={loadData}>🔄 Refresh</button>
       </div>
 
-      {/* Error Message */}
       {error && (
         <div style={{
           background: 'rgba(255, 107, 107, 0.2)',
@@ -238,7 +232,6 @@ export default function CurrentPricesTab() {
 
           return (
             <div key={crypto.id} className="crypto-card">
-              {/* Header */}
               <div className="crypto-header">
                 <div className="crypto-info">
                   <img src={crypto.image} alt={crypto.name} className="crypto-icon" />
@@ -255,7 +248,6 @@ export default function CurrentPricesTab() {
                 </div>
               </div>
 
-              {/* Chart with Labels */}
               <div className="crypto-chart-section">
                 <div className="chart-label">7-Day Price Chart</div>
                 <div className="crypto-chart">
@@ -280,7 +272,6 @@ export default function CurrentPricesTab() {
                           </linearGradient>
                         </defs>
                         
-                        {/* Grid */}
                         <CartesianGrid 
                           strokeDasharray="3 3" 
                           stroke="rgba(0, 217, 255, 0.15)" 
@@ -288,7 +279,6 @@ export default function CurrentPricesTab() {
                           vertical={false}
                         />
                         
-                        {/* X Axis - Dates */}
                         <XAxis 
                           dataKey="displayDate" 
                           stroke="#94a3b8"
@@ -300,7 +290,6 @@ export default function CurrentPricesTab() {
                           height={80}
                         />
                         
-                        {/* Y Axis - Price with Clean Values */}
                         <YAxis 
                           stroke="#94a3b8"
                           style={{ fontSize: '12px' }}
@@ -320,19 +309,16 @@ export default function CurrentPricesTab() {
                           width={50}
                         />
                         
-                        {/* Tooltip - Shows on hover */}
                         <Tooltip 
                           content={<CustomTooltip />}
                           cursor={{ strokeDasharray: '3 3', stroke: 'rgba(0, 217, 255, 0.5)', strokeWidth: 2 }}
                         />
                         
-                        {/* Legend */}
                         <Legend 
                           wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }}
                           contentStyle={{ color: '#94a3b8' }}
                         />
                         
-                        {/* Line */}
                         <Line 
                           type="natural" 
                           dataKey="price" 
@@ -353,7 +339,6 @@ export default function CurrentPricesTab() {
                 </div>
               </div>
 
-              {/* Holdings & Actions */}
               <div className="crypto-footer">
                 <div className="holdings">
                   <span className="label">You Hold:</span>
@@ -388,7 +373,7 @@ export default function CurrentPricesTab() {
         })}
       </div>
 
-      {/* Buy/Sell Modal */}
+      {/* Buy/Sell Modal - NOW PASSES currentHolding */}
       {modalOpen && selectedCrypto && (
         <BuySellModal
           crypto={selectedCrypto}
@@ -396,6 +381,7 @@ export default function CurrentPricesTab() {
           onClose={() => setModalOpen(false)}
           onSave={handleSaveTransaction}
           onSuccess={() => setModalOpen(false)}
+          currentHolding={getHoldingAmount(selectedCrypto.symbol)}
         />
       )}
     </div>

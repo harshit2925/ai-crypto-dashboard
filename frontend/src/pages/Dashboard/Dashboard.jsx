@@ -3,7 +3,7 @@ import OverviewTab from './tabs/OverviewTab';
 import CurrentPricesTab from './tabs/CurrentPricesTab';
 import PortfolioTab from './tabs/PortfolioTab';
 import TopMoversTab from './tabs/TopMoversTab';
-// import FloatingChatBubble from '../components/FloatingChatBubble';
+import TransactionsTab from './tabs/TransactionsTab';
 import FloatingChatBubble from '../../components/FloatingChatBubble';
 import { useAuth } from '../../hooks/useAuth';
 import './Dashboard.css';
@@ -27,49 +27,58 @@ export default function Dashboard() {
       {/* Header */}
       <header className="dashboard-header">
         <div className="header-left">
-          <h1 className="site-name">🚀 AI Crypto Dashboard</h1>
+          <h1>🚀 AI Crypto Dashboard</h1>
         </div>
 
         {/* Tabs */}
-        <nav className="tabs-nav">
+        <div className="header-tabs">
           <button
-            className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
+            className={`header-tab ${activeTab === 'overview' ? 'active' : ''}`}
             onClick={() => handleNavigate('overview')}
           >
             📊 Overview
           </button>
           <button
-            className={`tab-btn ${activeTab === 'prices' ? 'active' : ''}`}
+            className={`header-tab ${activeTab === 'prices' ? 'active' : ''}`}
             onClick={() => handleNavigate('prices')}
           >
             💹 Current Prices
           </button>
           <button
-            className={`tab-btn ${activeTab === 'portfolio' ? 'active' : ''}`}
+            className={`header-tab ${activeTab === 'portfolio' ? 'active' : ''}`}
             onClick={() => handleNavigate('portfolio')}
           >
             💰 Portfolio
           </button>
           <button
-            className={`tab-btn ${activeTab === 'movers' ? 'active' : ''}`}
+            className={`header-tab ${activeTab === 'movers' ? 'active' : ''}`}
             onClick={() => handleNavigate('movers')}
           >
             🏆 Top Movers
           </button>
-        </nav>
+          <button
+            className={`header-tab ${activeTab === 'transactions' ? 'active' : ''}`}
+            onClick={() => handleNavigate('transactions')}
+          >
+            📋 Transactions
+          </button>
+        </div>
 
         {/* Logout Button */}
-        <button className="logout-btn" onClick={handleLogout}>
-          Logout
-        </button>
+        <div className="header-right">
+          <button className="logout-btn" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
       </header>
 
       {/* Tab Content */}
-      <main className="tab-content">
+      <main className="dashboard-content">
         {activeTab === 'overview' && <OverviewTab onNavigate={handleNavigate} />}
         {activeTab === 'prices' && <CurrentPricesTab />}
         {activeTab === 'portfolio' && <PortfolioTab />}
         {activeTab === 'movers' && <TopMoversTab />}
+        {activeTab === 'transactions' && <TransactionsTab />}
       </main>
 
       {/* Floating Chat Bubble */}
