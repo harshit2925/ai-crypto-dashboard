@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import OverviewTab from './tabs/OverviewTab';
 import CurrentPricesTab from './tabs/CurrentPricesTab';
 import PortfolioTab from './tabs/PortfolioTab';
 import TopMoversTab from './tabs/TopMoversTab';
 import TransactionsTab from './tabs/TransactionsTab';
 import FloatingChatBubble from '../../components/FloatingChatBubble';
+import WelcomeAnimation from './components/WelcomeAnimation';
 import { useAuth } from '../../hooks/useAuth';
 import './Dashboard.css';
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [showWelcome, setShowWelcome] = useState(true); // ALWAYS TRUE for testing
   const { logout } = useAuth();
+
+  useEffect(() => {
+    console.log('✅ Dashboard loaded - showWelcome:', showWelcome);
+  }, [showWelcome]);
 
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {
@@ -22,8 +28,20 @@ export default function Dashboard() {
     setActiveTab(tab);
   };
 
+  const handleWelcomeComplete = () => {
+    console.log('✅ Welcome animation completed');
+    setShowWelcome(false);
+  };
+
   return (
     <div className="dashboard-container">
+      {/* Welcome Animation - ALWAYS SHOW FOR TESTING */}
+      {showWelcome && (
+        <>
+          <WelcomeAnimation onAnimationComplete={handleWelcomeComplete} />
+        </>
+      )}
+
       {/* Header */}
       <header className="dashboard-header">
         <div className="header-left">

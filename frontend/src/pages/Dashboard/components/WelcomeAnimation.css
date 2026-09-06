@@ -1,0 +1,501 @@
+.welcome-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #1a1f35 50%, #0f172a 75%, #1e293b 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 8s ease infinite, overlayFadeOut 6s ease-in-out forwards;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes overlayFadeOut {
+  0% {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  70% {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  100% {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+/* Full Screen Stock Chart Background */
+.chart-bg-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.stock-chart-bg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 30px rgba(14, 165, 233, 0.3));
+  animation: chartBgFadeIn 6s ease-in-out forwards;
+}
+
+@keyframes chartBgFadeIn {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.3;
+  }
+  40% {
+    opacity: 0.4;
+  }
+  70% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+/* Animated Chart Line - Draws itself */
+.chart-line-bg {
+  stroke: #0ea5e9;
+  animation: chartLineDraw 3s ease-out forwards;
+  stroke-dasharray: 3000;
+  stroke-dashoffset: 3000;
+}
+
+@keyframes chartLineDraw {
+  0% {
+    stroke-dashoffset: 3000;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+/* Candlesticks Animation */
+.candlestick-bg {
+  opacity: 0;
+  animation: candleRiseBg 2s ease-out forwards;
+  transform-origin: bottom;
+}
+
+.candlestick-bg line {
+  stroke: #10b981;
+}
+
+.candlestick-bg rect {
+  fill: #10b981;
+  stroke: #10b981;
+  stroke-width: 2;
+}
+
+.candlestick-bg-1 { animation-delay: 0.3s; }
+.candlestick-bg-2 { animation-delay: 0.6s; }
+.candlestick-bg-3 { animation-delay: 0.9s; }
+.candlestick-bg-4 { animation-delay: 1.2s; }
+.candlestick-bg-5 { animation-delay: 1.5s; }
+
+@keyframes candleRiseBg {
+  0% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+/* Arrow Animation - Shoots Up */
+.arrow-group-bg {
+  opacity: 0;
+  animation: arrowShootBg 2s ease-out 2s forwards;
+}
+
+.arrow-group-bg line {
+  stroke: #f59e0b;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.arrow-group-bg polygon {
+  fill: #f59e0b;
+}
+
+@keyframes arrowShootBg {
+  0% {
+    opacity: 0;
+    transform: translateY(200px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Growth Text */
+.chart-text-bg {
+  font-size: 32px;
+  font-weight: bold;
+  fill: #0ea5e9;
+  text-anchor: middle;
+  animation: textPulseBg 3s ease-in-out 0.5s forwards;
+  opacity: 0;
+}
+
+@keyframes textPulseBg {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+.welcome-container {
+  position: relative;
+  text-align: center;
+  z-index: 10;
+  width: 100%;
+  max-width: 900px;
+  animation: contentFadeIn 6s ease-in-out forwards;
+}
+
+@keyframes contentFadeIn {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  70% {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Background Animations - 8 Crypto Symbols */
+.welcome-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.08;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.crypto-shape {
+  position: absolute;
+  font-weight: bold;
+  animation: float 6s ease-in-out infinite;
+  text-shadow: 0 0 20px rgba(0, 217, 255, 0.4);
+}
+
+.crypto-shape-1 { top: 5%; left: 2%; font-size: 80px; color: #0ea5e9; animation-delay: 0s; }
+.crypto-shape-2 { top: 8%; right: 3%; font-size: 75px; color: #06b6d4; animation-delay: 1s; }
+.crypto-shape-3 { top: 40%; left: 1%; font-size: 85px; color: #14b8a6; animation-delay: 2s; }
+.crypto-shape-4 { top: 35%; right: 2%; font-size: 90px; color: #0ea5e9; animation-delay: 1.5s; }
+.crypto-shape-5 { bottom: 8%; left: 3%; font-size: 80px; color: #06b6d4; animation-delay: 0.5s; }
+.crypto-shape-6 { bottom: 12%; right: 2%; font-size: 85px; color: #14b8a6; animation-delay: 2.5s; }
+.crypto-shape-7 { top: 50%; left: 0%; transform: translateY(-50%); font-size: 70px; color: #0ea5e9; animation-delay: 1.2s; }
+.crypto-shape-8 { top: 55%; right: 0%; transform: translateY(-50%); font-size: 75px; color: #06b6d4; animation-delay: 1.8s; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-40px) rotate(15deg); }
+}
+
+/* Main Content */
+.welcome-content {
+  position: relative;
+  z-index: 2;
+  animation: slideUp 0.8s ease-out;
+  padding: 40px 20px;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Icon */
+.welcome-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: bounce 1s ease-in-out infinite;
+  animation-delay: 0.2s;
+  display: inline-block;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-25px); }
+}
+
+/* Title */
+.welcome-title {
+  font-size: 48px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0ea5e9, #06b6d4, #14b8a6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 15px 0;
+  letter-spacing: 1px;
+  text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+  animation: fadeInDown 0.8s ease-out 0.2s both;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Subtitle */
+.welcome-subtitle {
+  margin: 20px 0 40px 0;
+  animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.welcome-subtitle p {
+  font-size: 18px;
+  color: #cbd5e1;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Features Display */
+.welcome-features {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 40px 0;
+  animation: fadeIn 0.8s ease-out 0.6s both;
+  flex-wrap: wrap;
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 25px;
+  background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(6, 182, 212, 0.1));
+  border: 2px solid rgba(0, 217, 255, 0.3);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  min-width: 140px;
+  transition: all 0.3s ease;
+}
+
+.feature:hover {
+  border-color: rgba(0, 217, 255, 0.5);
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
+  transform: translateY(-5px);
+}
+
+.feature-icon {
+  font-size: 40px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.feature:nth-child(1) .feature-icon { animation-delay: 0s; }
+.feature:nth-child(2) .feature-icon { animation-delay: 0.2s; }
+.feature:nth-child(3) .feature-icon { animation-delay: 0.4s; }
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.feature-text {
+  font-size: 14px;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+/* Prompts */
+.welcome-prompts {
+  margin: 30px 0;
+  animation: fadeIn 0.8s ease-out 0.8s both;
+}
+
+.prompt-text {
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 8px 0;
+  font-style: italic;
+}
+
+.prompt-text.secondary {
+  font-size: 12px;
+  color: #64748b;
+  opacity: 0.8;
+}
+
+/* Loader */
+.welcome-loader {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 30px 0;
+  animation: fadeIn 0.8s ease-out 1s both;
+}
+
+.loader-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #00d9ff;
+  animation: wave 1.4s ease-in-out infinite;
+  box-shadow: 0 0 15px rgba(0, 217, 255, 0.6);
+}
+
+.loader-dot:nth-child(1) { animation-delay: 0s; }
+.loader-dot:nth-child(2) { animation-delay: 0.2s; }
+.loader-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes wave {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-12px);
+    opacity: 1;
+  }
+}
+
+/* Countdown Timer */
+.countdown {
+  margin-top: 30px;
+  animation: fadeIn 0.8s ease-out 1.2s both;
+}
+
+.countdown p {
+  font-size: 14px;
+  color: #0ea5e9;
+  font-weight: 600;
+  margin: 0;
+}
+
+.countdown-number {
+  display: inline-block;
+  min-width: 20px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #00d9ff;
+  animation: pulse-number 1s ease-in-out infinite;
+}
+
+@keyframes pulse-number {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .welcome-title {
+    font-size: 32px;
+  }
+
+  .welcome-subtitle p {
+    font-size: 14px;
+  }
+
+  .welcome-features {
+    gap: 15px;
+  }
+
+  .feature {
+    padding: 15px 20px;
+    min-width: 120px;
+  }
+
+  .feature-icon {
+    font-size: 32px;
+  }
+
+  .feature-text {
+    font-size: 12px;
+  }
+
+  .welcome-icon {
+    font-size: 60px;
+  }
+
+  .prompt-text {
+    font-size: 12px;
+  }
+
+  .crypto-shape {
+    font-size: 60px !important;
+  }
+
+  .chart-text-bg {
+    font-size: 20px;
+  }
+}
