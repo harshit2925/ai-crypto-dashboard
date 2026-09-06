@@ -1,6 +1,6 @@
 # 🚀 AI Crypto Dashboard
 
-Professional full-stack AI-powered cryptocurrency dashboard with real-time data analysis and intelligent recommendations.
+Professional full-stack AI-powered cryptocurrency dashboard with real-time data analysis, intelligent recommendations, and stunning animations.
 
 **Built with:** React + Vite + TailwindCSS + Node.js + Express + MongoDB + Groq AI
 
@@ -62,9 +62,22 @@ ai-crypto-dashboard/
 ✅ **Portfolio Tracking** - Track your holdings with gain/loss calculations  
 ✅ **AI Analysis** - Get intelligent insights using Groq API  
 ✅ **Chat Interface** - Ask AI questions about your portfolio  
+✅ **Animated Welcome Screen** - Professional stock chart animation on login with smooth transitions  
 ✅ **Price Alerts** - Set and manage price alerts  
 ✅ **Responsive Design** - Works on desktop and mobile  
 ✅ **Professional Architecture** - Modular, scalable, enterprise-ready  
+
+---
+
+## 🎬 Welcome Animation
+
+The dashboard features a **professional animated stock chart** that appears on login:
+
+- 📈 **Live Chart Animation** - Animated line chart draws itself with candlesticks rising
+- ✨ **Smooth Transitions** - Chart flows smoothly into background as dashboard loads
+- ⏱️ **6-7 Second Duration** - Perfect timing for immersive yet fast user experience
+- 🎨 **Pure CSS Animations** - No external libraries, lightweight and performant
+- 💚 **Bullish Styling** - Green candlesticks symbolizing crypto growth
 
 ---
 
@@ -214,9 +227,9 @@ When showing this project:
 
 1. **Show the code structure** - 100+ files demonstrates complexity
 2. **Explain the architecture** - Custom hooks, services, controllers
-3. **Mention the tech** - Full-stack with AI integration
+3. **Mention the tech** - Full-stack with AI integration AND polished animations
 4. **Show it live** - Deploy and share the link
-5. **Highlight features** - Real API integration, responsive design
+5. **Highlight features** - Real API integration, responsive design, professional animations
 
 ---
 
@@ -242,5 +255,3 @@ When showing this project:
 ---
 
 **Happy Coding! 🚀**
-
-Built for your resume and your future! 💼
