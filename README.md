@@ -221,18 +221,6 @@ npm run build
 
 ---
 
-## 💡 Tips for Your Resume
-
-When showing this project:
-
-1. **Show the code structure** - 100+ files demonstrates complexity
-2. **Explain the architecture** - Custom hooks, services, controllers
-3. **Mention the tech** - Full-stack with AI integration AND polished animations
-4. **Show it live** - Deploy and share the link
-5. **Highlight features** - Real API integration, responsive design, professional animations
-
----
-
 ## 🤔 Common Issues
 
 **Port already in use?**
